@@ -45,4 +45,13 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // Relasi ke Order (kurir yang menangani order)
+    public function assignedOrders()
+    {
+        return $this->hasMany(Order::class, 'KurirID');
+    }
 }
+
+
+
