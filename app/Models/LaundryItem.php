@@ -1,3 +1,4 @@
+<?php
 // app/Models/LaundryItem.php
 namespace App\Models;
 

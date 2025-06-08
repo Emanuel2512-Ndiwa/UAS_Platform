@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
-    protected $table = 'orders'; //sesuai nama tabel di database
+    protected $table = 'orders';
 
     public $timestamps = false;
 
@@ -29,5 +29,9 @@ class Order extends Model
     {
         return $this->belongsTo(User::class, 'KurirID');
     }
-    
+    public function items()
+    {
+        return $this->hasMany(LaundryItem::class, 'OrderID');
+    }
+
 }

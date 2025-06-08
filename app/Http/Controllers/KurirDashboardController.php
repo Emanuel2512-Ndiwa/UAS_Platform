@@ -1,5 +1,4 @@
-<?php 
-// app/Http/Controllers/KurirDashboardController.php
+<?php
 
 namespace App\Http\Controllers;
 
@@ -11,8 +10,14 @@ class KurirDashboardController extends Controller
 {
     public function index()
     {
-        $kurirID = Auth::id(); // ID kurir yang login
-        $orders = Order::with('user')->where('KurirID', $kurirID)->get();
+        $user = Auth::user();
+
+        $orders = Order::with(['user', 'items']) // relasi ke user dan item laundry
+            ->when($user->Role === 'Kurir', function ($query) use ($user) {
+                $query->where('KurirID', $user->id);
+            })
+            ->latest()
+            ->get();
 
         return view('kurir.dashboard', compact('orders'));
     }
