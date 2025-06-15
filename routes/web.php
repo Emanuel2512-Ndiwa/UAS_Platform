@@ -1,30 +1,23 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
-use App\Http\Controllers\AuthController;
-
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.post');
-
-Route::get('/regist', [AuthController::class, 'showRegist'])->name('regist');
-Route::post('/regist', [AuthController::class, 'regist'])->name('regist.post');
-
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-// contoh route dashboard (pastikan buat sesuai role dan middleware)
-Route::get('/dashboard', function () {
-    return "Dashboard - akses terbatas setelah login";
-})->middleware('auth')->name('dashboard');
-use App\Http\Controllers\KurirDashboardController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HomeController;
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/', [ServiceController::class, 'indexHome'])->name('home');
 
-Route::get('/kurir/dashboard', [KurirDashboardController::class, 'index'])
-    ->middleware('auth');
+Route::middleware('guest')->group(function () {
 
-Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->name('dashboard');
+    Route::get('/login', [AuthController::class, 'login'])->name('login');
+    Route::post('/login-process', [AuthController::class, 'loginProcess'])->name('login-process');
+
+    Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+    Route::post('/register.process', [AuthController::class, 'register'])->name('register.process');
+
 });
+// Route untuk user yang sudah login
+Route::middleware('auth')->group(function () {
+Route::get('/dashboard/pelanggan', [DashboardController::class, 'pelanggan'])->name('pelanggan.dashboard');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+});
+

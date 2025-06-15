@@ -3,31 +3,42 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Order;
-use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Transaction;
+use App\Models\Service;
 
 class DashboardController extends Controller
 {
-    public function index()
+    // Dashboard untuk Admin
+    public function adminDashboard()
     {
-        $totalOrders = Order::count();
-        $totalUsers = User::count();
-        $totalRevenue = Order::where('payment_status', 'paid')->sum('total_price');
-        $pendingOrders = Order::where('status', 'pending')->count();
-        $completedOrders = Order::where('status', 'done')->count();
+        $totalUser = \App\Models\User::count();
+        $totalTransaksi = Transaction::count();
+        $totalLayanan = Service::count();
 
-        $recentOrders = Order::with(['user', 'kurir'])
-            ->latest()
-            ->take(5)
-            ->get();
+        return view('dashboard.admin', compact('totalUser', 'totalTransaksi', 'totalLayanan'));
+    }
 
-        return view('dashboard.index', compact(
-            'totalOrders',
-            'totalUsers',
-            'totalRevenue',
-            'pendingOrders',
-            'completedOrders',
-            'recentOrders'
-        ));
+    // Dashboard untuk Karyawan
+    public function karyawanDashboard()
+    {
+        $transactions = Transaction::where('service_status', '!=', 'selesai')->latest()->get();
+        return view('dashboard.karyawan', compact('transactions'));
+    }
+
+    // Dashboard untuk Kurir
+    public function kurirDashboard()
+    {
+        $transactions = Transaction::where('kurir_id', Auth::id())->latest()->get();
+        return view('dashboard.kurir', compact('transactions'));
+    }
+
+    // Dashboard untuk Pelanggan
+    public function pelanggan()
+    {
+        $userId = Auth::id();
+        $transactions = Transaction::where('user_id', $userId)->latest()->get();
+
+        return view('dashboard.pelanggan', compact('transactions'));
     }
 }
