@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-<<<<<<< HEAD
+
 use App\Http\Controllers\AuthController;
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -16,7 +16,6 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/dashboard', function () {
     return "Dashboard - akses terbatas setelah login";
 })->middleware('auth')->name('dashboard');
-=======
 use App\Http\Controllers\KurirDashboardController;
 use App\Http\Controllers\DashboardController;
 
