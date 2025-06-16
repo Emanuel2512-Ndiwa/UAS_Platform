@@ -1,4 +1,4 @@
-@include('layouts.header')
+@include('components.navbar')
 
 <h1 class="text-center">Selamat Datang di LaundryApp</h1>
 <p class="text-center">Silakan login atau register untuk melanjutkan.</p>
@@ -8,4 +8,4 @@
     <a href="{{ route('register') }}" class="btn btn-outline-secondary">Register</a>
 </div>
 
-@include('layouts.footer')
+@include('components.footer')

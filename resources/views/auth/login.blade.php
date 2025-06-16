@@ -28,19 +28,12 @@
                     </div>
                 @endif
 
-                <form id="loginForm" action="{{ route('login-process') }}" method="POST" novalidate>
+                <form method="POST" action="{{ route('login.process') }}" novalidate>
                     @csrf
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            placeholder="Masukkan email Anda"
-                            required
-                            value="{{ old('email') }}"
-                            autofocus
-                        />
+                        <input type="email" id="email" name="email" placeholder="Masukkan email Anda" required
+                            value="{{ old('email') }}" autofocus />
                         @error('email')
                             <small class="error">{{ $message }}</small>
                         @enderror
@@ -48,18 +41,23 @@
 
                     <div class="form-group">
                         <label for="password">Kata Sandi</label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            placeholder="Masukkan kata sandi Anda"
-                            required
-                        />
+                        <input type="password" id="password" name="password" placeholder="Masukkan kata sandi Anda"
+                            required />
                         @error('password')
                             <small class="error">{{ $message }}</small>
                         @enderror
                     </div>
 
+                    <div class="role-selection">
+                        <label for="role">Sesuaikan Status Anda</label>
+                        <select name="role" id="role" required>
+                            <option value="">-- Pilih Role --</option>
+                            <option value="pelanggan">Pelanggan</option>
+                            <option value="karyawan">Karyawan</option>
+                            <option value="kurir">Kurir</option>
+                        </select>
+                    </div>
+                    </select>
                     <div class="form-footer">
                         <div class="remember-me">
                             <input type="checkbox" id="remember" name="remember" />
@@ -88,32 +86,3 @@
             </div>
         </div>
     </section>
-
-    <!-- Footer -->
-    @include('components.footer')
-
-    <script>
-        // Toggle menu untuk tampilan mobile
-        const menuToggle = document.getElementById('menuToggle');
-        const mainNav = document.getElementById('mainNav');
-
-        if (menuToggle) {
-            menuToggle.addEventListener('click', () => {
-                mainNav.classList.toggle('active');
-            });
-        }
-    </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    @if (session('failed'))
-        <script>
-            Swal.fire({
-                title: 'Email atau Password Salah',
-                icon: 'error',
-            });
-        </script>
-    @endif
-</body>
-
-</html>

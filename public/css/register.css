@@ -384,7 +384,7 @@ footer {
     .register-container {
         padding: 2rem 1.5rem;
     }
-    
+
     .form-row {
         flex-direction: column;
         gap: 0;
@@ -405,7 +405,8 @@ footer {
 
 .logout-btn {
     color: #fff;
-    background-color: #e74c3c; /* merah */
+    background-color: #e74c3c;
+    /* merah */
     padding: 10px 20px;
     border-radius: 20px;
     text-decoration: none;
@@ -417,6 +418,34 @@ footer {
     color: #fff;
 }
 
-.logo-icon img{
+.logo-icon img {
     width: 50px;
+}
+
+.role-selection {
+    margin: 15px 0;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.role-selection label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.role-selection select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.role-selection select:focus {
+    outline: none;
+    border-color: #007bff;
 }

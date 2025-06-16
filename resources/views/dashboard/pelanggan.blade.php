@@ -60,7 +60,7 @@
         <div class="container">
             <h2 class="section-title">Layanan Populer</h2>
             <div class="services-grid">
-                @foreach ($services as $service)
+                @foreach ($service as $services)
                     <div class="service-card">
                         <div class="service-image">
                             <img src="{{ $service->image }}" alt="">

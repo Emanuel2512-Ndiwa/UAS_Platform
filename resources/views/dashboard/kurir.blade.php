@@ -1,6 +1,6 @@
-@include('layouts.header')
+@include('components.navbar')
 
-<h2>Dashboard Admin</h2>
+<h2>Dashboard kurir</h2>
 <p>Selamat datang, Admin!</p>
 
-@include('layouts.footer')
+@include('components.footer')
