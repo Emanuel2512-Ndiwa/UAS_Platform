@@ -35,16 +35,16 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="firstname">Nama Depan</label>
-                            <input type="text" id="firstname" name="firstname" placeholder="Masukkan nama depan" required
-                                value="{{ old('firstname') }}" />
+                            <input type="text" id="firstname" name="firstname" placeholder="Masukkan nama depan"
+                                required value="{{ old('firstname') }}" />
                             @error('firstname')
                                 <small class="error">{{ $message }}</small>
                             @enderror
                         </div>
                         <div class="form-group">
                             <label for="lastname">Nama Belakang</label>
-                            <input type="text" id="lastname" name="lastname" placeholder="Masukkan nama belakang" required
-                                value="{{ old('lastname') }}" />
+                            <input type="text" id="lastname" name="lastname" placeholder="Masukkan nama belakang"
+                                required value="{{ old('lastname') }}" />
                             @error('lastname')
                                 <small class="error">{{ $message }}</small>
                             @enderror
@@ -62,8 +62,8 @@
 
                     <div class="form-group">
                         <label for="phone_number">Nomor Telepon</label>
-                        <input type="tel" id="phone_number" name="phone_number" placeholder="Masukkan nomor telepon" required
-                            value="{{ old('phone_number') }}" />
+                        <input type="tel" id="phone_number" name="phone_number" placeholder="Masukkan nomor telepon"
+                            required value="{{ old('phone_number') }}" />
                         @error('phone_number')
                             <small class="error">{{ $message }}</small>
                         @enderror
@@ -71,7 +71,8 @@
 
                     <div class="form-group">
                         <label for="address">Alamat</label>
-                        <textarea id="address" name="address" placeholder="Masukkan alamat lengkap Anda" rows="3" required>{{ old('address') }}</textarea>
+                        <textarea id="address" name="address" placeholder="Masukkan alamat lengkap Anda" rows="3"
+                            required>{{ old('address') }}</textarea>
                         @error('address')
                             <small class="error">{{ $message }}</small>
                         @enderror
@@ -80,7 +81,8 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="password">Kata Sandi</label>
-                            <input type="password" id="password" name="password" placeholder="Minimal 8 karakter" required />
+                            <input type="password" id="password" name="password" placeholder="Minimal 8 karakter"
+                                required />
                             @error('password')
                                 <small class="error">{{ $message }}</small>
                             @enderror
@@ -92,9 +94,22 @@
                         </div>
                     </div>
 
+                    <div class="role-selection">
+                        <label for="role">Daftar Sebagai</label>
+                        <select name="role" id="role" required>
+                            <option value="">-- Pilih Role --</option>
+                            <option value="pelanggan">Pelanggan</option>
+                            <option value="karyawan">Karyawan</option>
+                            <option value="kurir">Kurir</option>
+                        </select>
+                    </div>
+
+                    </select>
+
                     <div class="form-checkbox">
                         <input type="checkbox" id="terms" name="terms" {{ old('terms') ? 'checked' : '' }} required />
-                        <label for="terms">Saya setuju dengan <a href="#">Syarat & Ketentuan</a> dan <a href="#">Kebijakan Privasi</a></label>
+                        <label for="terms">Saya setuju dengan <a href="#">Syarat & Ketentuan</a> dan <a
+                                href="#">Kebijakan Privasi</a></label>
                         @error('terms')
                             <small class="error">{{ $message }}</small>
                         @enderror

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -40,17 +41,31 @@ class UserController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
-            'password' => 'required'
+            'password' => 'required',
+            'role' => 'required|in:admin,karyawan,kurir,pelanggan'
         ]);
-        $data = [
-            'email' => $request->email,
-            'password' => $request->password
-        ];
-        
-        if (Auth::attempt(credentials: $data)) {
-            return redirect()->route('home')->with('success', 'Login Berhasil');
+
+        // Coba autentikasi pengguna
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            $user = Auth::user();
+
+            // Validasi role yang dipilih sesuai dengan role user
+            if ($user->role !== $request->role) {
+                Auth::logout();
+                return redirect()->route('login')->with('failed', 'Role yang Anda pilih tidak sesuai dengan akun Anda.');
+            }
+
+            // Redirect sesuai role
+            return match ($user->role) {
+                'admin' => redirect()->route('dashboard.admin'),
+                'karyawan' => redirect()->route('dashboard.karyawan'),
+                'kurir' => redirect()->route('dashboard.kurir'),
+                'client' => redirect()->route('dashboard.pelanggan'),
+                default => redirect()->route('login')->with('failed', 'Role tidak valid.'),
+            };
         }
-        return redirect()->route('login')->with('failed', 'Email atau Password Salah');
+
+        return redirect()->route('login')->with('failed', 'Email atau Password salah.');
     }
 
     /**
@@ -79,7 +94,7 @@ class UserController extends Controller
             'address' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6',
-            'role' => 'in:client,admin'
+            'role' => 'required|in:pelanggan,karyawan,kurir' // Hanya bisa pilih dari ini
         ]);
 
         $data = [
@@ -91,13 +106,26 @@ class UserController extends Controller
             'password' => Hash::make($validatedData['password']),
             'role' => $validatedData['role']
         ];
+
         try {
             $user = User::create($data);
             Auth::login($user);
-            return redirect()->route('home')->with('success', 'Berhasil Membuat Akun');
+
+            // Redirect otomatis sesuai role
+            switch ($user->role) {
+                case 'admin':
+                    return redirect()->route('dashboard.admin');
+                case 'karyawan':
+                    return redirect()->route('dashboard.karyawan');
+                case 'kurir':
+                    return redirect()->route('dashboard.kurir');
+                case 'client':
+                    return redirect()->route('dashboard.pelanggan');
+                default:
+                    return redirect()->route('dashboard.pelanggan');
+            }
         } catch (\Exception $e) {
             return redirect()->route('register')->with('failed', 'Gagal Membuat Akun');
         }
     }
 }
-
