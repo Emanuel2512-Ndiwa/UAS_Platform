@@ -12,6 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('transactions', function (Blueprint $table) {
+            if (!Schema::hasColumn('transactions', 'order_id')) {
+                $table->string('order_id')->unique()->after('id');
+            }
             //
         });
     }

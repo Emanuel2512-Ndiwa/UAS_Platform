@@ -11,9 +11,4 @@ class Service extends Model
 
     protected $fillable = ['name', 'description', 'price', 'image'];
 
-    public function pelanggan()
-    {
-        $services = Service::orderBy('id', 'asc')->take(3)->get();
-        return view('pages.home', compact('services'));
-    }
 }

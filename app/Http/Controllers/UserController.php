@@ -36,36 +36,26 @@ class UserController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
-     */
-    public function login_process(Request $request)
+     */ public function login_process(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
-            'password' => 'required',
-            'role' => 'required|in:admin,karyawan,kurir,pelanggan'
+            'password' => 'required'
         ]);
 
-        // Coba autentikasi pengguna
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = Auth::user();
 
-            // Validasi role yang dipilih sesuai dengan role user
-            if ($user->role !== $request->role) {
-                Auth::logout();
-                return redirect()->route('login')->with('failed', 'Role yang Anda pilih tidak sesuai dengan akun Anda.');
-            }
-
-            // Redirect sesuai role
             return match ($user->role) {
                 'admin' => redirect()->route('dashboard.admin'),
                 'karyawan' => redirect()->route('dashboard.karyawan'),
                 'kurir' => redirect()->route('dashboard.kurir'),
-                'client' => redirect()->route('dashboard.pelanggan'),
-                default => redirect()->route('login')->with('failed', 'Role tidak valid.'),
+                'pelanggan' => redirect()->route('dashboard.pelanggan'),
+                default => redirect()->route('login')->withErrors(['login' => 'Role tidak valid.'])
             };
         }
 
-        return redirect()->route('login')->with('failed', 'Email atau Password salah.');
+        return redirect()->route('login')->withErrors(['login' => 'Email atau Password salah.']);
     }
 
     /**
@@ -119,7 +109,7 @@ class UserController extends Controller
                     return redirect()->route('dashboard.karyawan');
                 case 'kurir':
                     return redirect()->route('dashboard.kurir');
-                case 'client':
+                case 'pelanggan':
                     return redirect()->route('dashboard.pelanggan');
                 default:
                     return redirect()->route('dashboard.pelanggan');
