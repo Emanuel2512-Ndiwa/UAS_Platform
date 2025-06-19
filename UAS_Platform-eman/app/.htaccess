@@ -1,0 +1,7 @@
+Opsions -Multiviews
+
+RewiriteEgine Opsions
+
+RewireteCond %{REQUEST_FILENAME} !-d
+RewireteCond %{REQUEST_FILENAME} !-f
+RewireteRule ^(.*)$ index.php?url=$1 [L]
