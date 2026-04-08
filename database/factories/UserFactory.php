@@ -21,6 +21,9 @@ class UserFactory extends Factory
             'phone_number' => fake()->phoneNumber(),
             'address' => fake()->address(),
             'role' => fake()->randomElement(['kurir', 'karyawan', 'pelanggan']),
+            'is_active' => true,
+            'latitude' => fake()->latitude(),
+            'longitude' => fake()->longitude(),
         ];
     }
 

@@ -1,57 +1,106 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ServiceController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\UserController;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\KaryawanController;
+use App\Http\Controllers\KurirController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentController;
 
-
-Route::get('/cek-db', function () {
-    try {
-        DB::connection()->getPdo();
-        return 'Koneksi database berhasil: ' . DB::connection()->getDatabaseName();
-    } catch (\Exception $e) {
-        return 'Gagal konek DB: ' . $e->getMessage();
-    }
-});
-
-
-Route::get('/', [ServiceController::class, 'indexHome'])->name('home');
-Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
-Route::get('/services/{id}', [ServiceController::class, 'show'])->name('services.show');
-Route::post('/services', [ServiceController::class, 'store'])->name('services.store');
-Route::put('/services/{id}', [ServiceController::class, 'update'])->name('services.update');
-Route::delete('/services/{id}', [ServiceController::class, 'destroy'])->name('services.destroy');
-
-//Halaman login dan register (khusus untuk guest / belum login)
+// ============================================================
+// AUTH ROUTES (Guest Only)
+// ============================================================
 Route::middleware('guest')->group(function () {
-    Route::get('/login', [UserController::class, 'index'])->name('login');
-    Route::post('/login', [UserController::class, 'login_process'])->name('login.process');
-
-    Route::get('/register', [UserController::class, 'register'])->name('register');
-    Route::post('/register', [UserController::class, 'register_process'])->name('register.process');
+    Route::get('/login',    [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login',   [AuthController::class, 'login'])->name('login.process');
+    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register',[AuthController::class, 'register'])->name('register.process');
 });
 
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
-// Authenticated user
+// ============================================================
+// MIDTRANS WEBHOOK (tanpa auth/CSRF, dipanggil oleh server Midtrans)
+// ============================================================
+Route::post('/payment/webhook', [PaymentController::class, 'webhook'])
+    ->name('payment.webhook')
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+
+// ============================================================
+// AUTHENTICATED ROUTES
+// ============================================================
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard/admin', [DashboardController::class, 'adminDashboard'])->name('dashboard.admin');
-    Route::get('/dashboard/karyawan', [DashboardController::class, 'karyawanDashboard'])->name('dashboard.karyawan');
-    Route::get('/dashboard/kurir', [DashboardController::class, 'kurirDashboard'])->name('dashboard.kurir');
-    Route::get('/dashboard/pelanggan', [DashboardController::class, 'pelanggan'])->name('dashboard.pelanggan');
-    Route::post('/logout', [UserController::class, 'logout'])->name('logout');
 
-    // Transaksi
-    Route::get('/transactions', [TransactionController::class, 'index'])->name('transaction.index');
-    Route::post('/transactions', [TransactionController::class, 'store'])->name('transaction.store');
-    Route::post('/transactions/create', [TransactionController::class, 'create_transaction'])->name('transaction.create');
-    Route::put('/transactions/{id}/status', [TransactionController::class, 'update_status'])->name('transaction.update_status');
-    Route::get('/transactions/{id}', [TransactionController::class, 'show'])->name('transaction.show');
-    Route::delete('/transactions/{id}', [TransactionController::class, 'delete_transaction'])->name('transaction.delete');
+    // ----------------------------------------------------------
+    // ADMIN
+    // ----------------------------------------------------------
+    Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/dashboard',                  [AdminController::class, 'dashboard'])->name('dashboard');
+        Route::get('/users',                      [AdminController::class, 'users'])->name('users');
+        Route::get('/users/create',               [AdminController::class, 'createUser'])->name('users.create');
+        Route::post('/users',                     [AdminController::class, 'storeUser'])->name('users.store');
+        Route::patch('/users/{user}/toggle',      [AdminController::class, 'toggleUserStatus'])->name('users.toggle');
+        Route::delete('/users/{user}',            [AdminController::class, 'destroyUser'])->name('users.destroy');
+        Route::get('/transactions',               [AdminController::class, 'transactions'])->name('transactions');
+        Route::patch('/transactions/{transaction}/cancel', [AdminController::class, 'cancelTransaction'])->name('transactions.cancel');
+        Route::get('/transactions/{transaction}/wa',       [AdminController::class, 'generateWaLink'])->name('transactions.wa');
+    });
 
+    // ----------------------------------------------------------
+    // KARYAWAN
+    // ----------------------------------------------------------
+    Route::middleware('role:karyawan,admin')->prefix('karyawan')->name('karyawan.')->group(function () {
+        Route::get('/dashboard',                          [KaryawanController::class, 'dashboard'])->name('dashboard');
+        Route::patch('/transactions/{transaction}/status',[KaryawanController::class, 'updateStatus'])->name('transactions.status');
+        Route::get('/walkin/create',                      [KaryawanController::class, 'createWalkin'])->name('walkin.create');
+        Route::post('/walkin',                            [KaryawanController::class, 'storeWalkin'])->name('walkin.store');
+        Route::get('/inventaris',                         [KaryawanController::class, 'inventaris'])->name('inventaris');
+        Route::get('/inventaris/create',                  [KaryawanController::class, 'createInventaris'])->name('inventaris.create');
+        Route::post('/inventaris',                        [KaryawanController::class, 'storeInventaris'])->name('inventaris.store');
+        Route::patch('/inventaris/{inventory}',           [KaryawanController::class, 'updateInventaris'])->name('inventaris.update');
+        Route::delete('/inventaris/{inventory}',          [KaryawanController::class, 'destroyInventaris'])->name('inventaris.destroy');
+    });
 
-    // Halaman khusus kurir melihat order
-    Route::get('/kurir/orders', [TransactionController::class, 'kurirOrders'])->name('transaction.kurir_orders');
+    // ----------------------------------------------------------
+    // KURIR
+    // ----------------------------------------------------------
+    Route::middleware('role:kurir,admin')->prefix('kurir')->name('kurir.')->group(function () {
+        Route::get('/dashboard',                           [KurirController::class, 'dashboard'])->name('dashboard');
+        Route::patch('/orders/{transaction}/ambil',        [KurirController::class, 'ambilOrder'])->name('orders.ambil');
+        Route::patch('/orders/{transaction}/selesai',      [KurirController::class, 'selesaikanOrder'])->name('orders.selesai');
+        Route::put('/location',                            [KurirController::class, 'updateLocation'])->name('location.update');
+    });
+
+    // ----------------------------------------------------------
+    // PELANGGAN / ORDER
+    // ----------------------------------------------------------
+    Route::middleware('role:pelanggan,admin')->prefix('order')->name('order.')->group(function () {
+        Route::get('/',                    [OrderController::class, 'index'])->name('index');
+        Route::get('/checkout/{service}',  [OrderController::class, 'checkout'])->name('checkout');
+        Route::post('/',                   [OrderController::class, 'store'])->name('store');
+        Route::get('/history',             [OrderController::class, 'history'])->name('history');
+        Route::get('/{transaction}',       [OrderController::class, 'show'])->name('show');
+    });
+
+    // ----------------------------------------------------------
+    // PAYMENT
+    // ----------------------------------------------------------
+    Route::prefix('payment')->name('payment.')->group(function () {
+        Route::get('/{transaction}',            [PaymentController::class, 'checkoutPage'])->name('checkout');
+        Route::post('/{transaction}/snap-token',[PaymentController::class, 'createSnapToken'])->name('snap_token');
+    });
+
+    // Redirect /dashboard ke dashboard role masing-masing
+    Route::get('/dashboard/admin',     [AdminController::class, 'dashboard'])->name('dashboard.admin');
+    Route::get('/dashboard/karyawan',  [KaryawanController::class, 'dashboard'])->name('dashboard.karyawan');
+    Route::get('/dashboard/kurir',     [KurirController::class, 'dashboard'])->name('dashboard.kurir');
+    Route::get('/dashboard/pelanggan', [OrderController::class, 'history'])->name('dashboard.pelanggan');
 });
+
+// ============================================================
+// HOME
+// ============================================================
+Route::get('/', function () {
+    return redirect()->route('login');
+})->name('home');
