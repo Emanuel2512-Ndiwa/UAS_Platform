@@ -51,5 +51,14 @@ class DatabaseSeeder extends Seeder
             'address' => 'Jakarta',
             'role' => 'pelanggan',
         ]);
+
+        // --- SERVICES SEEDER ---
+        \App\Models\Service::create(['name' => 'Cuci Kering', 'price' => 7000]);
+        \App\Models\Service::create(['name' => 'Cuci Setrika', 'price' => 10000]);
+        \App\Models\Service::create(['name' => 'Setrika Saja', 'price' => 5000]);
+
+        // --- INVENTORY SEEDER (Fixed IDs) ---
+        \App\Models\Inventory::create(['id' => 1, 'item_name' => 'Sabun Cair', 'stock' => 10, 'unit' => 'Liter']);
+        \App\Models\Inventory::create(['id' => 2, 'item_name' => 'Pewangi', 'stock' => 10, 'unit' => 'Liter']);
     }
 }

@@ -8,6 +8,7 @@ use App\Models\Service;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class KaryawanController extends Controller
 {
@@ -40,17 +41,25 @@ class KaryawanController extends Controller
             'service_status' => 'required|in:' . implode(',', $allowed),
         ]);
 
-        $transaction->update([
-            'service_status' => $request->service_status,
-            'karyawan_id'    => Auth::id(),
-        ]);
+        try {
+            DB::beginTransaction();
 
-        // Jika selesai cuci, potong stok inventaris (sabun/pewangi)
-        if ($request->service_status === 'selesai_cuci') {
-            $this->consumeInventory($transaction->quantity ?? 1);
+            $transaction->update([
+                'service_status' => $request->service_status,
+                'karyawan_id'    => Auth::id(),
+            ]);
+
+            // Jika selesai cuci, potong stok inventaris
+            if ($request->service_status === 'selesai_cuci') {
+                $this->consumeInventory($transaction->quantity ?? 1);
+            }
+
+            DB::commit();
+            return back()->with('success', 'Status berhasil diperbarui ke: ' . $request->service_status);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal memperbarui status: ' . $e->getMessage());
         }
-
-        return back()->with('success', 'Status berhasil diperbarui ke: ' . $request->service_status);
     }
 
     /**
@@ -62,12 +71,13 @@ class KaryawanController extends Controller
         $konsumsiSabun    = $quantity * 0.1;
         $konsumsiPewangi  = $quantity * 0.05;
 
-        $sabun   = Inventory::where('item_name', 'LIKE', '%sabun%')->first();
-        $pewangi = Inventory::where('item_name', 'LIKE', '%pewangi%')->first();
+        // FIXED IDs: 1 = Sabun, 2 = Pewangi
+        $sabun   = Inventory::find(1);
+        $pewangi = Inventory::find(2);
 
         if ($sabun) {
             $sabun->stock = max(0, $sabun->stock - $konsumsiSabun);
-            $sabun->save(); // booted() akan auto-update status
+            $sabun->save();
         }
         if ($pewangi) {
             $pewangi->stock = max(0, $pewangi->stock - $konsumsiPewangi);
@@ -97,19 +107,27 @@ class KaryawanController extends Controller
             'notes'                 => 'nullable|string',
         ]);
 
-        $service      = Service::findOrFail($validated['service_id']);
-        $totalAmount  = $service->price * $validated['quantity'];
+        try {
+            DB::beginTransaction();
 
-        Transaction::create([
-            ...$validated,
-            'order_type'     => 'offline_walkin',
-            'total_amount'   => $totalAmount,
-            'payment_status' => 'paid', // Walk-in bayar di tempat
-            'service_status' => 'menunggu',
-            'karyawan_id'    => Auth::id(),
-        ]);
+            $service      = Service::findOrFail($validated['service_id']);
+            $totalAmount  = $service->price * $validated['quantity'];
 
-        return redirect()->route('karyawan.dashboard')->with('success', 'Order walk-in berhasil dibuat.');
+            Transaction::create([
+                ...$validated,
+                'order_type'     => 'offline_walkin',
+                'total_amount'   => $totalAmount,
+                'payment_status' => 'paid',
+                'service_status' => 'menunggu',
+                'karyawan_id'    => Auth::id(),
+            ]);
+
+            DB::commit();
+            return redirect()->route('karyawan.dashboard')->with('success', 'Order walk-in berhasil dibuat.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal membuat order walk-in: ' . $e->getMessage());
+        }
     }
 
     // -------------------------------------------------------------------------
