@@ -19,6 +19,9 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
+            $table->boolean('is_active')->default(true);
+            $table->decimal('latitude', 10, 8)->nullable();
+            $table->decimal('longitude', 11, 8)->nullable();
             $table->enum('role', ['admin', 'pelanggan', 'kurir', 'karyawan'])->default('pelanggan');
         });
     }
