@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Inventory;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
@@ -152,5 +153,61 @@ class AdminController extends Controller
         $waUrl = "https://wa.me/{$phone}?text={$pesan}";
 
         return redirect()->away($waUrl);
+    }
+
+    // -------------------------------------------------------------------------
+    // MANAJEMEN LAYANAN (SERVICES)
+    // -------------------------------------------------------------------------
+
+    /** Daftar semua layanan */
+    public function services()
+    {
+        $services = Service::all();
+        return view('admin.services.index', compact('services'));
+    }
+
+    /** Form tambah layanan */
+    public function createService()
+    {
+        return view('admin.services.create');
+    }
+
+    /** Simpan layanan baru */
+    public function storeService(Request $request)
+    {
+        $request->validate([
+            'name'  => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'description' => 'nullable|string',
+        ]);
+
+        Service::create($request->all());
+        return redirect()->route('admin.services')->with('success', 'Layanan berhasil ditambahkan.');
+    }
+
+    /** Form edit layanan */
+    public function editService(Service $service)
+    {
+        return view('admin.services.edit', compact('service'));
+    }
+
+    /** Update layanan */
+    public function updateService(Request $request, Service $service)
+    {
+        $request->validate([
+            'name'  => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'description' => 'nullable|string',
+        ]);
+
+        $service->update($request->all());
+        return redirect()->route('admin.services')->with('success', 'Layanan berhasil diperbarui.');
+    }
+
+    /** Hapus layanan */
+    public function destroyService(Service $service)
+    {
+        $service->delete();
+        return redirect()->route('admin.services')->with('success', 'Layanan berhasil dihapus.');
     }
 }

@@ -45,6 +45,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/transactions',               [AdminController::class, 'transactions'])->name('transactions');
         Route::patch('/transactions/{transaction}/cancel', [AdminController::class, 'cancelTransaction'])->name('transactions.cancel');
         Route::get('/transactions/{transaction}/wa',       [AdminController::class, 'generateWaLink'])->name('transactions.wa');
+
+        // Layanan (Services) CRUD
+        Route::get('/services',                   [AdminController::class, 'services'])->name('services');
+        Route::get('/services/create',            [AdminController::class, 'createService'])->name('services.create');
+        Route::post('/services',                  [AdminController::class, 'storeService'])->name('services.store');
+        Route::get('/services/{service}/edit',    [AdminController::class, 'editService'])->name('services.edit');
+        Route::patch('/services/{service}',       [AdminController::class, 'updateService'])->name('services.update');
+        Route::delete('/services/{service}',      [AdminController::class, 'destroyService'])->name('services.destroy');
     });
 
     // ----------------------------------------------------------
